@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:summary="@string/pref_username_category_summary"
+        android:title="@string/pref_username_category_title" >
+        <EditTextPreference
+            android:key="username"
+            android:summary="@string/pref_username_summary"
+            android:title="@string/pref_username_title" />
+        <EditTextPreference
+            android:key="password"
+            android:inputType="textPassword"
+            android:summary="@string/pref_password_summary"
+            android:title="@string/pref_password_title" />
+        <CheckBoxPreference
+            android:key="directReference"
+            android:defaultValue="@bool/pref_default_direct_ref"
+            android:summary="@string/pref_direct_ref_summary"
+            android:title="@string/pref_direct_ref_title" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:summary="@string/pref_gui_category_summary"
+        android:title="@string/pref_gui_category_title" >
+        <PreferenceScreen
+            android:key="ratePreferenceScreen"
+            android:title="@string/pref_visible_rates_category_title"
+            android:persistent="false">
+        </PreferenceScreen>
+        <CheckBoxPreference
+            android:key="showPeriod"
+            android:defaultValue="@bool/pref_default_show_period"
+            android:summary="@string/pref_show_period_summary"
+            android:title="@string/pref_show_period_title" />
+    </PreferenceCategory>
+</PreferenceScreen>

@@ -1,0 +1,27 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/list_view_row_item"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/default_row_height">
+
+    <CheckBox
+        android:id="@+id/list_view_item_check"
+        android:layout_width="@dimen/item_menu_row_button_width"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:focusable="false"
+        android:clickable="false"/>
+
+    <TextView
+        android:id="@+id/list_view_item_text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:layout_toRightOf="@id/list_view_item_check"
+        android:layout_marginLeft="@dimen/small_margin"
+        android:layout_marginRight="@dimen/small_margin"
+        android:textSize="@dimen/rate_text_size"
+        android:gravity="left|center_vertical"
+        android:singleLine="true"
+        android:focusable="false"/>
+
+</RelativeLayout>

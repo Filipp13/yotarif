@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Yota</string>
+    <string name="title_activity_settings">Настройки</string>
+
+    <string name="action_settings">Настройки</string>
+    <string name="action_update">Обновить</string>
+    <string name="action_open_browser">Показать браузер</string>
+
+    <string name="message_incorrect_rate">Неправильный тариф</string>
+    <string name="message_connection_start">Соединение</string>
+    <string name="message_connection_established">Соединение установлено</string>
+    <string name="message_connection_interrupted">Соединение прервано</string>
+    <string name="message_transition_to">Переход к</string>
+
+    <string name="pref_username_category_title">Подключение</string>
+    <string name="pref_username_category_summary">Настройки подключения</string>
+    <string name="pref_gui_category_title">Интерфейс пользователя</string>
+    <string name="pref_gui_category_summary">Настройки интерфейса пользователя</string>
+    <string name="pref_username_title">Логин</string>
+    <string name="pref_username_summary">Введите логин</string>
+    <string name="pref_password_title">Пароль</string>
+    <string name="pref_password_summary">Введите пароль</string>
+    <string name="pref_direct_ref_title">Пропуск ввода логина</string>
+    <string name="pref_direct_ref_summary">Пытаться не вводить логин/пароль</string>
+    <string name="pref_visible_rates_category_title">Отображаемые тарифы</string>
+    <string name="pref_show_period_title">Оставшиеся дни</string>
+    <string name="pref_show_period_summary">Показывать количество оставшихся дней</string>
+
+    <bool name="pref_default_direct_ref">false</bool>
+    <bool name="pref_default_show_period">true</bool>
+
+    <string name="error_money_is_over">Закончились деньги</string>
+    <string name="error_money_is_over_title">Пополните счет</string>
+    <string name="error_incorrect_login_title">Неверный логин/пароль</string>
+    <string name="error_incorrect_login">Неверное сочетание логина и пароля</string>
+
+    <string name="period_left">Оплаченное время:</string>
+
+    <string name="tarif_not_determed">Список тарифов появится после первой загрузки</string>
+    <string name="tarif_not_determed_title">Список тарифов</string>
+    <string name="tarif_not_determed_summary">появится после первой загрузки</string>
+    <string name="tarif_reload_title">Обновление списка</string>
+    <string name="tarif_reload_summary">Удалить загруженный список тарифов (необходима перезагрузка)</string>
+
+</resources>
