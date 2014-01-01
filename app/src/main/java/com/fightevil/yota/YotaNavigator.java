@@ -18,18 +18,14 @@ public class YotaNavigator {
 
     static private String[] MoneyIsOverPeriods = {"0 дней", "0 days"}; // надо найти не зависящий от языка указатель на то, что деньги закончились
 
-    static private String incScript       = "$(\".increase a\").click()";
-    static private String decScript       = "$(\".decrease a\").click()";
-    static private String commitScript    = "$(\".tarriff-info a\").click()";
-    static private String setValueScript  = "$(\".slider-container\").find(\".slider-inner\").yotaSlider(\"value\", !);";
+    static private String incScript       = "$('.increase a').click()";
+    static private String decScript       = "$('.decrease a').click()";
+    static private String commitScript    = "$('.tarriff-info a').click()";
+    static private String setValueScript  = "$('.slider-container .slider-inner').yotaSlider('value', !val);";
     static private String manageRateScript =
-                       "var period = \"\";" +
-                       "var inps = $(\".tariff-choice-form input\");" +
-                       "for (var i = 0; i < inps.length; ++i)" +
-                           "if (inps[i].getAttribute('name') == 'period')" +
-                               "period = inps[i].getAttribute('value');" +
-                       "var rateNumber = $(\".slider-container\").find(\".slider-inner\").yotaSlider(\"value\");" +
-                       "window.injectedObject.ManageRate(rateNumber, period);";
+            "var period= $('.tariff-choice-form input[name=\"period\"]')[0].getAttribute('value');" +
+            "var rateNumber = $('.slider-container .slider-inner').yotaSlider('value');" +
+            "window.injectedObject.ManageRate(rateNumber, period);";
     static private String setRateIfConnectedScript =
             "$.ajax({" +
                 "type: 'POST'," +
@@ -43,7 +39,7 @@ public class YotaNavigator {
                 "}" +
             "});";
     static private String getRateNamesThenManageRateScript =
-            "var product = $(\".tariff-choice-form input[name='product']\")[0].getAttribute('value');" +
+            "var product = $('.tariff-choice-form input[name=\"product\"]')[0].getAttribute('value');" +
             "var steps = sliderData[product]['steps'];" +
             "window.injectedObject.SetRateCount(steps.length);" +
             "for (var i = 0; i < steps.length; ++i){" +
@@ -51,6 +47,11 @@ public class YotaNavigator {
                 "window.injectedObject.SetRateName(i, rateName);" +
             "}" +
             "window.injectedObject.AfterRateDefined();";
+    static private String loginScript =
+            "$('input[id=\"username\"]')[0].setAttribute('value', '!lgn');" +
+            "$('input[name=\"IDToken3\"]')[1].setAttribute('value', '!pas');" +
+            "$('button[type=\"submit\"]')[0].click();";
+
 
     private WebView _webBrowser;
     private int _needRateNum = -1;
@@ -81,7 +82,7 @@ public class YotaNavigator {
 
         class JsObject {
             @JavascriptInterface
-            synchronized public void ManageRate(int curRateNumber, String period) {
+            public void ManageRate(int curRateNumber, String period) {
                 Log.d(tag, "rate and period determed" + " | " + RateNames[curRateNumber] + " |" + period);
                 for (int i = 0; i < MoneyIsOverPeriods.length; ++i)
                     if (MoneyIsOverPeriods[i].equals(period)){
@@ -95,7 +96,7 @@ public class YotaNavigator {
                 if (_needRateNum != 0)
                     freeAmount = 0;
                 if ((_needRateNum > 0 && _needRateNum < RateNames.length && _needRateNum != curRateNumber) || (_needRateNum == 0 && freeAmount++ == 0)){
-                    String script = setValueScript.replaceFirst("!", String.valueOf(_needRateNum));
+                    String script = setValueScript.replaceFirst("!val", String.valueOf(_needRateNum));
                     RunJavaScript(script);
                     RunJavaScript(commitScript);
                 }
@@ -105,28 +106,28 @@ public class YotaNavigator {
                 }
             }
             @JavascriptInterface
-            synchronized public void SetRateOnTestConnectionSuccess(){
+            public void SetRateOnTestConnectionSuccess(){
                 Log.d(tag, "connection exist");
                 RunJavaScript(manageRateScript);
             }
             @JavascriptInterface
-            synchronized public void OnTestConnectionError(){
+            public void OnTestConnectionError(){
                 Log.d(tag, "connection not exist");
                 GoYota();
             }
             @JavascriptInterface
-            synchronized public void SetRateCount(int count){
+            public void SetRateCount(int count){
                 Log.d(tag, "set rate count " + count);
                 RateNames = new String[count];
             }
             @JavascriptInterface
-            synchronized public void SetRateName(int num, String name){
+            public void SetRateName(int num, String name){
                 name = RateNamesProcessing(name);
                 Log.d(tag, "set rate name " + num + "|" + name);
                 RateNames[num] = name;
             }
             @JavascriptInterface
-            synchronized public void AfterRateDefined(){
+            public void AfterRateDefined(){
                 _externalInterface.OnRateNamesDefined();
                 Log.d(tag, (RateNames==null)?"null":RateNames.length+RateNames[0]);
                 RunJavaScript(manageRateScript);
@@ -234,18 +235,9 @@ public class YotaNavigator {
                 {
                     String loginBuf = _login.replaceAll("'", "\\'");
                     String passwordBuf = _password.replaceAll("'", "\\'");
-                    _webBrowser.loadUrl(
-                        "javascript:" +
-                            "document.getElementById('username').setAttribute('value','" + loginBuf + "');" +
-                            "var elems = document.getElementsByTagName('input');" +
-                            "for(var i=0; i<elems.length; i++)" +
-                                "if (elems[i].getAttribute('name')=='IDToken3')" +
-                                    "elems[i].setAttribute('value','" + passwordBuf + "');" +
-                            "var elems2 = document.getElementsByTagName('button');" +
-                            "for(var i=0; i<elems2.length; i++)" +
-                                "if (elems2[i].getAttribute('type')=='submit')" +
-                                    "elems2[i].click();"
-                    );
+                    String script = loginScript.replaceFirst("!lgn", loginBuf);
+                    script = script.replaceFirst("!pas", passwordBuf);
+                    RunJavaScript(script);
                 }
                 catch(Exception e)
                 {
