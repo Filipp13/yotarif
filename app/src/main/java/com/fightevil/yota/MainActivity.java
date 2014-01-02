@@ -1,23 +1,17 @@
 package com.fightevil.yota;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.test.suitebuilder.annotation.LargeTest;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.WebView;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,8 +24,8 @@ public class MainActivity extends ActionBarActivity {
     static final String tag = "yota.main";
 
     YotaNavigator yota;
-    MyArrayAdapter adapter;
-    ListViewDataCalculator dataLoader;
+    SelectableListViewDataController listViewDataController;
+    YotaVisibleRatesHandler yotaVisibleRatesHandler;
     boolean useAnimation = true;
     MyAnimation animation;
     SharedPreferences prefs;
@@ -60,9 +54,9 @@ public class MainActivity extends ActionBarActivity {
                 public void run() {
                     if (rateNumber >= 0 && rateNumber < YotaNavigator.RateNames.length){
                         getSupportActionBar().setTitle(YotaNavigator.RateNames[rateNumber]);
-                        int pos = dataLoader.RateNumberToListViewPosition(rateNumber);
+                        int pos = yotaVisibleRatesHandler.RateNumberToNumberOfVisibleRate(rateNumber);
                         if (pos != -1)
-                            adapter.SelectItem(pos);
+                            listViewDataController.SelectItem(pos);
                     }
                     else Toast.makeText(getApplicationContext(), getString(R.string.message_incorrect_rate), Toast.LENGTH_LONG).show();
                     if (useAnimation)
@@ -102,7 +96,7 @@ public class MainActivity extends ActionBarActivity {
                     Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
                 if (useAnimation)
                     animation.Error();
-                adapter.DeselectAll();
+                listViewDataController.DeselectAll();
                 }
             });
         }
@@ -212,9 +206,8 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void UpdateAdapter(){
-        dataLoader = new ListViewDataCalculator();
-        adapter = new MyArrayAdapter(getApplicationContext(), MyArrayAdapter.CreateModelList(dataLoader.GetListViewElems()));
-        rateList.setAdapter(adapter);
+        yotaVisibleRatesHandler = new YotaVisibleRatesHandler();
+        listViewDataController.SetTextData(yotaVisibleRatesHandler.GetVisibleRatesNames());
     }
 
     @Override
@@ -240,17 +233,17 @@ public class MainActivity extends ActionBarActivity {
             myWebView.setVisibility(View.VISIBLE);
         yota = new YotaNavigator(myWebView, username, password, useDirectReference, onPageLoad); 
         rateList = (ListView)findViewById(R.id.listView);
-        dataLoader = new ListViewDataCalculator();
-        adapter = new MyArrayAdapter(getApplicationContext(), MyArrayAdapter.CreateModelList(dataLoader.GetListViewElems()));
-        rateList.setAdapter(adapter);
+        listViewDataController = new SelectableListViewDataController(rateList);
+        yotaVisibleRatesHandler = new YotaVisibleRatesHandler();
+        listViewDataController.SetTextData(yotaVisibleRatesHandler.GetVisibleRatesNames());
         rateList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                if (!adapter.IsSelected(position) &&
+                if (!listViewDataController.IsSelected(position) &&
                         !getSupportActionBar().getTitle().equals(getString(R.string.error_incorrect_login_title)) &&
                         !getSupportActionBar().getTitle().equals(getString(R.string.error_money_is_over_title))){
-                    yota.SetRate(dataLoader.ListViewPositionToRateNumber(position));
-                    adapter.SelectItem(position);
+                    yota.SetRate(yotaVisibleRatesHandler.NumberOfVisibleRateToRateNumber(position));
+                    listViewDataController.SelectItem(position);
                 }
             }
         });
@@ -275,6 +268,9 @@ public class MainActivity extends ActionBarActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_scheduling:
+                startActivity(new Intent(MainActivity.this, SchedulingActivity.class));
+                return true;
             case R.id.action_update:
                 yota.GoYota();
                 return true;
@@ -303,7 +299,7 @@ public class MainActivity extends ActionBarActivity {
                 } else if (needUpdate){
                     needUpdate = false;
                     yota.GoYota();
-                }
+        }
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -364,85 +360,10 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    public static class Model {
-        private String name;
-        private boolean selected;
-
-        public Model(String name) {
-            this.name = name;
-            selected = false;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public boolean isSelected() {
-            return selected;
-        }
-
-        public void setSelected(boolean selected) {
-            this.selected = selected;
-        }
-    }
-
-    public static class MyArrayAdapter extends ArrayAdapter<Model>{
-        private final Context context;
-        private final List<Model> values;
-
-        public MyArrayAdapter(Context context, List<Model> values) {
-            super(context, R.layout.list_item, values);
-            this.context = context;
-            this.values = values;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            View rowView = inflater.inflate(R.layout.list_item, parent, false);
-            TextView textView = (TextView) rowView.findViewById(R.id.list_view_item_text);
-            CheckBox checkBox = (CheckBox) rowView.findViewById(R.id.list_view_item_check);
-            textView.setText(values.get(position).getName());
-            checkBox.setChecked(values.get(position).isSelected());
-            return rowView;
-        }
-
-        public void SelectItem(int position){
-            SetValuesTofDefault();
-            values.get(position).setSelected(true);
-            notifyDataSetChanged();
-        }
-
-        public boolean IsSelected(int position){
-            return values.get(position).isSelected();
-        }
-
-        public void DeselectAll(){
-            SetValuesTofDefault();
-            notifyDataSetChanged();
-        }
-
-        private void SetValuesTofDefault(){
-            for (int i = 0; i < values.size(); ++i)
-                values.get(i).setSelected(false);
-        }
-
-        private static List<Model> CreateModelList(String[] textValues){
-            List<Model> values = new ArrayList<Model>();
-            for (int i = 0; i < textValues.length; ++i)
-                values.add(new Model(textValues[i]));
-            return values;
-        }
-    }
-
-    class ListViewDataCalculator{
+    class YotaVisibleRatesHandler {
         boolean[] rateVisibility = null;
 
-        public ListViewDataCalculator(){
+        public YotaVisibleRatesHandler(){
             if (YotaNavigator.RateNames != null){
                 rateVisibility = new boolean[YotaNavigator.RateNames.length];
                 for (int i = 0; i < YotaNavigator.RateNames.length; ++i){
@@ -451,7 +372,7 @@ public class MainActivity extends ActionBarActivity {
             }
         }
 
-        public String[] GetListViewElems(){
+        public String[] GetVisibleRatesNames(){
             List<String> res = new ArrayList<String>();
             if (rateVisibility != null)
                 for (int i = 0; i < YotaNavigator.RateNames.length; ++i)
@@ -460,7 +381,7 @@ public class MainActivity extends ActionBarActivity {
             return res.toArray(new String[res.size()]);
         }
 
-        public int RateNumberToListViewPosition(int rateNumber){
+        public int RateNumberToNumberOfVisibleRate(int rateNumber){
             if (!rateVisibility[rateNumber])
                 return -1;
             int res = 0;
@@ -470,7 +391,7 @@ public class MainActivity extends ActionBarActivity {
             return res;
         }
 
-        public int ListViewPositionToRateNumber(int position){
+        public int NumberOfVisibleRateToRateNumber(int position){
             int p = -1;
             for (int i = 0; i < YotaNavigator.RateNames.length; ++i){
                 if (rateVisibility[i])
